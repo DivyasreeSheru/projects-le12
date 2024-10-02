@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import io
 # CSV file path
-csv_file_path = r""C:\Users\divya\OneDrive\Desktop\apolo\div.csv"
+csv_file_path = r"C:\Users\divya\OneDrive\Desktop\apolo\div.csv"
 
 
 # Function to generate an image with the prediction report
