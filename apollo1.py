@@ -6,6 +6,17 @@ import io
 # CSV file path
 csv_file_path = r"C:\div.csv"
 
+# Check if the file exists
+if os.path.exists(csv_file_path):
+    # Load the CSV file using pandas
+    try:
+        df = pd.read_csv(file_path)
+        st.write(df)  # Display the dataframe in Streamlit
+    except Exception as e:
+        st.error(f"Error reading the file: {e}")
+else:
+    st.error(f"File not found: {file_path}")
+
 
 # Function to generate an image with the prediction report
 def generate_image(values, result, name):
