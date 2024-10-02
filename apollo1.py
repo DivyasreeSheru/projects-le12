@@ -1,12 +1,11 @@
-import os
 import streamlit as st
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import io
-
 # CSV file path
-csv_file_path = '/mnt/data/sree.csv'
+csv_file_path = r"C:\Users\divya\OneDrive\Desktop\apolo\pred_case_heart_disease_caesarmario.csv"
+
 
 # Function to generate an image with the prediction report
 def generate_image(values, result, name):
@@ -68,14 +67,62 @@ def generate_image(values, result, name):
     img_buffer.seek(0)
 
     return img_buffer
-
 # Login function
 def login(username, password):
     return username == "heartdisease" and password == "heart@123"
 
+
 # Main app
 def main():
     st.title("🌟 Heart Disease Prediction 🌟")
+
+    # Use inline CSS to set the background color and styles
+    st.markdown(
+        """
+        <style>
+        .stApp {
+            background-color: #ADD8E6;  /* Set background color to light blue */
+            position: relative;
+            height: 100vh;  /* Full height to cover the screen */
+            color: black;  /* Set text color to dark black */
+            font-weight: bold;  /* Make all text bold */
+        }
+
+        /* Add a large dark red "+" symbol in the background */
+        .plus-symbol {
+           position: fixed;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%);
+           font-size: 850px;  /* Size of the + symbol */
+           font-weight: bold;
+           color: rgba(255, 0, 0, 0.1);  /* Dark red color for the symbol */
+           z-index: 1;  /* Ensure it's behind other elements */
+        }
+
+        /* Custom styles for the title */
+        h1, h2, h3, h4, h5, h6 {
+            color: black;  /* Set all headings to dark black */
+            font-weight: bold;  /* Make all headings bold */
+        }
+
+        /* Custom styles for text input */
+        .stTextInput {
+            border-radius: 10px;
+        }
+
+        /* Custom styles for buttons */
+        .stButton > button {
+            background-color: #4CAF50;  /* Green background for buttons */
+            color: white;  /* Text color for buttons */
+            border-radius: 5px;
+        }
+        </style>
+
+        <div class="plus-symbol">+</div>  <!-- Plus symbol -->
+        """,
+        unsafe_allow_html=True
+    )
 
     # Initial login page
     if "logged_in" not in st.session_state:
@@ -113,55 +160,53 @@ def main():
         thal = st.number_input("Thalassemia (thal)", min_value=1.0, max_value=3.0)
 
         # Load the CSV file for actual predictions
-        try:
-            df = pd.read_csv(csv_file_path)
+        df = pd.read_csv(csv_file_path)
 
-            # Use input values to match and fetch predictions from the CSV
-            filtered_data = df[(df['age'] == age) &
-                               (df['sex'] == (1 if sex == "Male" else 0)) &
-                               (df['cp'] == cp)]
+        # Use input values to match and fetch predictions from the CSV
+        filtered_data = df[(df['age'] == age) &
+                           (df['sex'] == (1 if sex == "Male" else 0)) &
+                           (df['cp'] == cp)]
 
-            if not filtered_data.empty:
-                # Get prediction values from the CSV
-                extra_trees_pred = filtered_data['Extra Trees Pred Target'].values[0]
-                knn_pred = filtered_data['KNN Pred Target'].values[0]
-                logistic_regression_pred = filtered_data['Logistic Regression Pred Target'].values[0]
+        if not filtered_data.empty:
+            # Get prediction values from the CSV
+            extra_trees_pred = filtered_data['Extra Trees Pred Target'].values[0]
+            knn_pred = filtered_data['KNN Pred Target'].values[0]
+            logistic_regression_pred = filtered_data['Logistic Regression Pred Target'].values[0]
 
-                # Calculate average prediction target
-                avg_pred = (extra_trees_pred + knn_pred + logistic_regression_pred) / 3
+            # Calculate average prediction target
+            avg_pred = (extra_trees_pred + knn_pred + logistic_regression_pred) / 3
 
-                if st.button("Submit"):
-                    if avg_pred >= 0.5:
-                        result = "❤️ Heart disease predicted"
-                        st.success(result)
-                    else:
-                        result = "💪 Person is healthy"
-                        st.success(result)
+            if st.button("Submit"):
+                if avg_pred >= 0.5:
+                    result = "❤️ Heart disease predicted"
+                    st.success(result)
+                else:
+                    result = "💪 Person is healthy"
+                    st.success(result)
 
-                    # Store values
-                    values = {
-                        "Age": age,
-                        "Sex": sex,
-                        "Chest Pain Type (cp)": cp,
-                        "Resting Blood Pressure (trestbps)": trestbps,
-                        "Serum Cholesterol (chol)": chol,
-                        "Fasting Blood Sugar (fbs)": fbs,
-                        "Resting ECG (restecg)": restecg,
-                        "Max Heart Rate (thalach)": thalach,
-                        "Exercise Induced Angina (exang)": exang,
-                        "ST Depression (oldpeak)": oldpeak,
-                        "Slope of Peak Exercise (slope)": slope,
-                        "Major Vessels (ca)": ca,
-                        "Thalassemia (thal)": thal
-                    }
+                # Store values
+                values = {
+                    "Age": age,
+                    "Sex": sex,
+                    "Chest Pain Type (cp)": cp,
+                    "Resting Blood Pressure (trestbps)": trestbps,
+                    "Serum Cholesterol (chol)": chol,
+                    "Fasting Blood Sugar (fbs)": fbs,
+                    "Resting ECG (restecg)": restecg,
+                    "Max Heart Rate (thalach)": thalach,
+                    "Exercise Induced Angina (exang)": exang,
+                    "ST Depression (oldpeak)": oldpeak,
+                    "Slope of Peak Exercise (slope)": slope,
+                    "Major Vessels (ca)": ca,
+                    "Thalassemia (thal)": thal
+                }
 
-                    # Generate and display report image
-                    report_image = generate_image(values, result, "xyz")
-                    st.image(report_image, caption='Heart Disease Prediction Report', use_column_width=True)
-            else:
-                st.error("❌ No matching data found for the entered values.")
-        except FileNotFoundError:
-            st.error(f"CSV file not found at {csv_file_path}. Please ensure the file exists.")
+                # Generate and display report image
+                report_image = generate_image(values, result, "xyz")
+                st.image(report_image, caption='Heart Disease Prediction Report', use_column_width=True)
+        else:
+            st.error("❌ No matching data found for the entered values.")
+
 
 # Run the main function
 if __name__ == "__main__":
