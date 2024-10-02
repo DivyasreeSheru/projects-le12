@@ -160,7 +160,7 @@ def main():
         thal = st.number_input("Thalassemia (thal)", min_value=1.0, max_value=3.0)
 
         # Load the CSV file for actual predictions
-        df = pd.read_csv( r"C:\Users\divya\OneDrive\Desktop\apolo\pred_case_heart_disease_caesarmario.csv")
+        df = pd.read_csv( r"G:\My Drive\pred_case_heart_disease_caesarmario.csv")
 
         # Use input values to match and fetch predictions from the CSV
         filtered_data = df[(df['age'] == age) &
