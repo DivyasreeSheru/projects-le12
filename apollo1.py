@@ -6,7 +6,7 @@ from datetime import datetime
 import io
 
 # CSV file path
-csv_file_path = r"C:/div.csv"
+csv_file_path = r"C:\Users\divya\OneDrive\Desktop\div.csv"
 
 # Function to generate an image with the prediction report
 def generate_image(values, result, name):
