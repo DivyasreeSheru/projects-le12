@@ -3,7 +3,6 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 import io
-import joblib
 
 # Function to generate an image with the prediction report
 def generate_image(values, result, name):
@@ -80,17 +79,20 @@ def main():
 
     if option == "Home":
         st.image("https://cdn.pixabay.com/photo/2023/09/05/08/02/earth-8234588_1280.jpg", caption="Heart Health Matters")
+
         st.write("""
         ### Overview
         This app uses machine learning models to predict the risk of heart disease based on several health metrics. It allows you to upload patient data, generate predictions, and provides a detailed report.
+
         ### Features:
         - Predicts heart disease based on various health metrics.
-        - Supports Extra Trees Classifier for better accuracy.
+        - Supports multiple machine learning models for better accuracy.
         - Allows CSV data upload for bulk predictions.
         - Generates a customized report with results.
+
         ### Understanding Heart Disease Risk
-        Heart disease refers to several types of heart conditions, with coronary artery disease being the most common. Factors like high blood pressure, high cholesterol, smoking, and obesity significantly increase the risk of heart disease. Family history, age, and gender also play a role.
-        
+        Heart disease refers to several types of heart conditions, with coronary artery disease being the most common. Factors like high blood pressure, high cholesterol , smoking, and obesity significantly increase the risk of heart disease. Family history, age, and gender also play a role.
+
         **Risk Factors:**
         - High blood pressure and cholesterol
         - Smoking
@@ -98,7 +100,7 @@ def main():
         - Poor diet and excessive alcohol
         - Obesity
         - Diabetes
-        
+
         ### Protecting Your Heart:
         1. **Exercise Regularly**: Aim for at least 30 minutes of moderate exercise most days of the week.
         2. **Eat a Healthy Diet**: Include more fruits, vegetables, whole grains, and healthy fats like omega-3 fatty acids.
@@ -106,6 +108,7 @@ def main():
         4. **Manage Stress**: Chronic stress can raise blood pressure. Practice relaxation techniques like meditation or yoga.
         5. **Regular Health Check-ups**: Get regular screenings for blood pressure, cholesterol, and diabetes.
         6. **Maintain a Healthy Weight**: Reducing obesity reduces the risk of heart disease significantly.
+
         """)
 
         st.info("Login with **username**: `heartdisease` and **password**: `heart@123` to start using the app.")
@@ -144,9 +147,9 @@ def main():
                     except Exception as e:
                         st.error(f"Error reading the file: {e}")
                         return
-            else:
-                st.warning("Please upload a CSV file to continue.")
-                return
+                else:
+                    st.warning("Please upload a CSV file to continue.")
+                    return
 
             df = st.session_state.df  # Use the data from session state
 
@@ -167,58 +170,69 @@ def main():
             thal = st.number_input("Thalassemia (thal)", min_value=1.0, max_value=3.0)
 
             if not name.strip():
-                st.error(" ❌ Please enter the patient's name.")
+                st.error("❌ Please enter the patient's name.")
                 return
 
-            filtered_data = df[(df['age'] == age) &  
-                               (df['sex'] == (1 if sex == "Male" else 0)) &  
-                               (df['cp'] == cp)]
-            if not filtered_data.empty:
-                extra_trees_pred = filtered_data['Extra Trees Pred Target'].values[0]
+            # Prepare the input data for prediction
+            input_data = pd.DataFrame({
+                "age": [age],
+                "sex": [1 if sex == "Male" else 0 ],
+                "cp": [cp],
+                "trestbps": [trestbps],
+                "chol": [chol],
+                "fbs": [fbs],
+                "restecg": [restecg],
+                "thalach": [thalach],
+                "exang": [exang],
+                "oldpeak": [oldpeak],
+                "slope": [slope],
+                "ca": [ca],
+                "thal": [thal]
+            })
 
-                if st.button("Submit"):
-                    result = "❤️ Heart disease predicted, Please consult a Cardiologist" if extra_trees_pred >= 0.5 else "❤️ Person is healthy"
-                    st.success(result)
+            if st.button("Submit"):
+                # Assuming the model is already loaded and named 'best_model_et'
+                result = best_model_et.predict(input_data)[0]
+                result_text = "❤️ Heart disease predicted, Please consult a Cardiologist" if result == 1 else "❤️ Person is healthy"
+                st.success(result_text)
 
-                    values = {
-                        "Name": name,
-                        "Age": age,
-                        "Sex": sex,
-                        "Chest Pain Type (cp)": cp,
-                        "Resting Blood Pressure (trestbps)": trestbps,
-                        "Serum Cholesterol (chol)": chol,
-                        "Fasting Blood Sugar (fbs)": fbs,
-                        "Resting ECG (restecg)": restecg,
-                        "Max Heart Rate (thalach)": thalach,
-                        "Exercise Induced Angina (exang)": exang,
-                        "ST Depression (oldpeak)": oldpeak,
-                        "Slope of Peak Exercise (slope)": slope,
-                        "Major Vessels (ca)": ca,
-                        "Thalassemia (thal)": thal
-                    }
-                    report_image = generate_image(values, result, "ML")
-                    st.image(report_image, caption='Heart Disease Prediction Report', use_column_width=True)
+                values = {
+                    "Name": name,
+                    "Age": age,
+                    "Sex": sex,
+                    "Chest Pain Type (cp)": cp,
+                    "Resting Blood Pressure (trestbps)": trestbps,
+                    "Serum Cholesterol (chol)": chol,
+                    "Fasting Blood Sugar (fbs)": fbs,
+                    "Resting ECG (restecg)": restecg,
+                    "Max Heart Rate (thalach)": thalach,
+                    "Exercise Induced Angina (exang)": exang,
+                    "ST Depression (oldpeak)": oldpeak,
+                    "Slope of Peak Exercise (slope)": slope,
+                    "Major Vessels (ca)": ca,
+                    "Thalassemia (thal)": thal
+                }
+                report_image = generate_image(values, result_text, "ML")
+                st.image(report_image, caption='Heart Disease Prediction Report', use_column_width=True)
 
-                    # Add a download button for the report
-                    st.download_button(
-                        label="Download Report",
-                        data=report_image,
-                        file_name='heart_disease_prediction_report.png',
-                        mime='image/png'
-                    )
-            else:
-                st.error("❌ No matching data found for the entered values.")
+                # Add a download button for the report
+                st.download_button(
+                    label="Download Report",
+                    data=report_image,
+                    file_name='heart_disease_prediction_report.png',
+                    mime='image/png'
+                )
 
     elif option == "About":
         st.header("About the App")
         st.write("""
-        This Heart Disease Prediction app uses the Extra Trees Classifier to predict the possibility of heart disease based on various health metrics.
+        This Heart Disease Prediction app uses machine learning models to predict the possibility of heart disease based on various health metrics.
         - Log in with username - heartdisease and Password - heart@123
         - Upload the patient's data once.
-        - The app uses the Extra Trees Classifier to generate predictions.
+        - The app uses machine learning models (Extra Trees) to generate predictions.
         - Get the patient's report.
         """)
 
-# Run the main function
+# Run the main function if __name__ == "__main__":
 if __name__ == "__main__":
     main()
