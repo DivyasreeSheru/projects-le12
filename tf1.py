@@ -167,13 +167,12 @@ def main():
             thal = st.number_input("Thalassemia (thal)", min_value=1.0, max_value=3.0)
 
             if not name.strip():
-                st.error("❌ Please enter the patient's name.")
+                st.error(" ❌ Please enter the patient's name.")
                 return
 
-            filtered_data ```python
-            = df[(df['age'] == age) &  
-                   (df['sex'] == (1 if sex == "Male" else 0)) &  
-                   (df['cp'] == cp)]
+            filtered_data = df[(df['age'] == age) &  
+                               (df['sex'] == (1 if sex == "Male" else 0)) &  
+                               (df['cp'] == cp)]
             if not filtered_data.empty:
                 extra_trees_pred = filtered_data['Extra Trees Pred Target'].values[0]
 
